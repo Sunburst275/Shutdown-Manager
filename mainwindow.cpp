@@ -32,7 +32,8 @@ MainWindow::MainWindow(bool *triggered, QWidget *parent) :
     currentTime(),
     settingsDir(""),
     timeLimitsDir(""),
-    trayIcon(QIcon("D:/Programme/02 Kreatoren/04 Wissenschaft/Qt/Projekte/build-ShutdownMonitor-Desktop_Qt_5_13_0_MinGW_64_bit-Debug/icons/iconicus.ico")),
+    // HIER SOLLTE MAN VIELLEICHT DEN PFAD DYNAMISCH ALLOKIEREN
+    trayIcon(QIcon("")),
     restoreAction(tr("Restore"), this),
     quitAction(tr("Quit"), this)
 {
@@ -1114,7 +1115,7 @@ void MainWindow::changeEvent(QEvent *event)
 
 void MainWindow::initializeSystemTrayComponents()
 {
-    // Create trayIcon context menu:
+        // Create trayIcon context menu:
     connect(&restoreAction, &QAction::triggered, this, &MainWindow::on_mainWindow_restoreAction);
     connect(&quitAction, &QAction::triggered, this, &MainWindow::on_mainWindow_quitAction);
 
@@ -1129,40 +1130,35 @@ void MainWindow::initializeSystemTrayComponents()
 
     // Test whether icon exists
     // This is to make sure that the tray Icon exists and the program can be loaded into the tray and be restored
-    std::ifstream iconExistsTestStream;
-    try
-    {
-        iconExistsTestStream.open(iconPath.str(), std::ios::in | std::ios::binary);
-    }
-    catch(...)
+
+    QFileInfo fileToCheck(QString::fromStdString(iconPath.str()));
+    if(!(fileToCheck.exists() && fileToCheck.isFile()))
     {
         deathMarker = true;
     }
 
-    if(iconExistsTestStream.good() && iconExistsTestStream.is_open())
+    if(deathMarker)
     {
-        iconExistsTestStream.close();
-        try
-        {
-        trayIcon.setIcon(QIcon(QString::fromStdString(iconPath.str())));
-        }
-        catch(...)
-        {
-            deathMarker = true;
-        }
+        std::stringstream errss;
+        errss << "Warning: The tray icon seems to be missing.\nPlease make sure it is contained in the following path:\n" << std::endl;
+        errss << iconPath.str() << std::endl;
+
+        QMessageBox msgbx;
+        msgbx.setText(QString::fromStdString(errss.str()));
+        msgbx.setWindowTitle(QString("Warning! Tray Icon Missing"));
+        msgbx.setModal(true);
+        msgbx.exec();
     }
     else
     {
-        deathMarker = true;
+        trayIcon.setIcon(QIcon(QString::fromStdString(iconPath.str())));
+        trayIconMenu.setTitle(QString("Shutdown Monitor"));
+        trayIconMenu.addAction(QString::fromStdString("Shutdown Manager"));
+        trayIconMenu.addSeparator();
+        trayIconMenu.addAction(&restoreAction);
+        trayIconMenu.addAction(&quitAction);
+        trayIcon.setContextMenu(&trayIconMenu);
     }
-
-    trayIconMenu.setTitle(QString("Shutdown Monitor"));
-    trayIconMenu.addAction(QString::fromStdString("Shutdown Manager"));
-    trayIconMenu.addSeparator();
-    trayIconMenu.addAction(&restoreAction);
-    trayIconMenu.addAction(&quitAction);
-    trayIcon.setContextMenu(&trayIconMenu);
-
 }
 
 void MainWindow::on_mainWindow_restoreAction()

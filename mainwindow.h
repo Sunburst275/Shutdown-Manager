@@ -1,15 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-
-// Kontextmenü für Icon, Icon- Pfad dynamisch (sprich: Übergeordnetes Verzeichnis, als Qt Ressource)
-
-
 // Qt headers
 #include "QtGui"
 #include "QtCore"
 #include "QMainWindow"
+#include "QMessageBox"
 #include "QWidget"
+#include "QFileInfo"
 
 #include "QGraphicsScene"
 #include "QGraphicsLineItem"
