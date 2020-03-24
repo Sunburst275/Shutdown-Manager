@@ -219,8 +219,10 @@ private slots:
     void on_walkthroughButton_released();
     void on_sunburst275Button_released();
 
-    void on_mainWindow_restoreAction();
-    void on_mainWindow_quitAction();
+    // System tray functions
+    // Here are some problems, for further information look into 'mainwindow.cpp'
+    void on_mainWindow_restoreAction(QSystemTrayIcon::ActivationReason reason);
+    void on_mainWindow_quitAction(QSystemTrayIcon::ActivationReason reason);
 
 private:
     void initializeProgram();

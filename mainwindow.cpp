@@ -1115,9 +1115,34 @@ void MainWindow::changeEvent(QEvent *event)
 
 void MainWindow::initializeSystemTrayComponents()
 {
-        // Create trayIcon context menu:
-    connect(&restoreAction, &QAction::triggered, this, &MainWindow::on_mainWindow_restoreAction);
-    connect(&quitAction, &QAction::triggered, this, &MainWindow::on_mainWindow_quitAction);
+
+    /*  HERE LIES A BIG PROBLEM (I SUSPECT):
+    *   I don't know why the connect(...) function won't work. No matter what I try it seems to always throw the error:
+    *       -> "QMetaObject::connectSlotsByName: No matching signal for on_mainWindow_restoreAction(QSystemTrayIcon::ActivationReason)"
+    *       -> "QMetaObject::connectSlotsByName: No matching signal for on_mainWindow_quitAction(QSystemTrayIcon::ActivationReason)"
+    *       -> "QObject::connect: No such signal QMenu::QSystemTrayIcon::activated(QSystemTrayIcon::ActivationReason r)"
+    *       -> and the respective counterpart of the other function I want to activate
+    *   And thus the program wont start when executed on another system
+    *   Right now I dont want to fix it, but maybe I'm going to in the future
+    *
+    */
+
+    // Connect trayIcon context menu items:
+    /*
+    //connect(&restoreAction, &QAction::triggered, this, &MainWindow::on_mainWindow_restoreAction); // this kind of worked
+    //connect(&quitAction, &QAction::triggered, this, &MainWindow::on_mainWindow_quitAction);       // this kind of worked
+
+    //connect(&restoreAction, SIGNAL(QSystemTrayIcon::activated(QSystemTrayIcon::ActivationReason reason)), this, SLOT(MainWindow::on_mainWindow_restoreAction(QSystemTrayIcon::ActivationReason)));
+    //connect(&quitAction, SIGNAL(QSystemTrayIcon::activated(QSystemTrayIcon::ActivationReason reason)), this, SLOT(MainWindow::on_mainWindow_quitAction(QSystemTrayIcon::ActivationReason)));
+
+    connect(&trayIconMenu , SIGNAL(QSystemTrayIcon::activated(QSystemTrayIcon::ActivationReason r)),
+            this, SLOT(MainWindow::on_mainWindow_restoreAction(QSystemTrayIcon::ActivationReason)));
+
+    connect(&trayIconMenu , SIGNAL(QSystemTrayIcon::activated(QSystemTrayIcon::ActivationReason r)),
+            this, SLOT(MainWindow::on_mainWindow_quitAction(QSystemTrayIcon::ActivationReason)));
+
+    //connect(&tThread, SIGNAL(sendTimeUpdate(const std::tm*)), this, SLOT(receiveTimeUpdate(const std::tm*)));
+    */
 
     // Create icon path
     std::stringstream iconPath;
@@ -1130,7 +1155,6 @@ void MainWindow::initializeSystemTrayComponents()
 
     // Test whether icon exists
     // This is to make sure that the tray Icon exists and the program can be loaded into the tray and be restored
-
     QFileInfo fileToCheck(QString::fromStdString(iconPath.str()));
     if(!(fileToCheck.exists() && fileToCheck.isFile()))
     {
@@ -1161,13 +1185,13 @@ void MainWindow::initializeSystemTrayComponents()
     }
 }
 
-void MainWindow::on_mainWindow_restoreAction()
+void MainWindow::on_mainWindow_restoreAction(QSystemTrayIcon::ActivationReason reason)
 {
     this->show();
     this->setWindowState(Qt::WindowState::WindowActive);
 }
 
-void MainWindow::on_mainWindow_quitAction()
+void MainWindow::on_mainWindow_quitAction(QSystemTrayIcon::ActivationReason reason)
 {
     this->close();
 }
